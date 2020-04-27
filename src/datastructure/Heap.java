@@ -10,6 +10,8 @@ public interface Heap<E> {
 
   public void replaceTop(E element);
 
+  public void sort();
+
   public List<E> getElemList();
 
   public int getElemCount();

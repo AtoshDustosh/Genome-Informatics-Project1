@@ -11,6 +11,7 @@ public class TopKGenomeSearcher {
   public static final String TEST_FILEPATH1 = "src/testcase/refGene.hg19.sorted.bed";
   public static final String TEST_FILEPATH2 = "src/testcase/hg19_200.bed";
   public static final int K = 20;
+  public static final String CHROMESOME = "chr22";
 
   private String chromesomeSearched = "";
   private int topK = 0;
@@ -30,15 +31,16 @@ public class TopKGenomeSearcher {
           && line.getChromesome().equals(this.chromesomeSearched)) {
         heap.insert(line);
       }
-      System.out.println(++count + "..." + heap.getTop());
-      System.out.println(heap.toString());
+//      System.out.println(++count + "...top..." + heap.getTop());
+//      System.out.println(heap.toString());
     }
     return heap.getElemList();
   }
 
   public static void main(String[] args) {
-    TopKGenomeSearcher searcher = new TopKGenomeSearcher("chr22", K);
-    List<BEDline> topK = searcher.searchFile(TopKGenomeSearcher.TEST_FILEPATH1);
+    TopKGenomeSearcher searcher = new TopKGenomeSearcher(
+        TopKGenomeSearcher.CHROMESOME, TopKGenomeSearcher.K);
+    List<BEDline> topK = searcher.searchFile(TopKGenomeSearcher.TEST_FILEPATH2);
     for (int i = 0; i < topK.size(); i++) {
       System.out.println(topK.get(i));
     }

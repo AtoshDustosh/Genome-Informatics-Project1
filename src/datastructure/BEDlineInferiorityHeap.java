@@ -36,10 +36,11 @@ public class BEDlineInferiorityHeap implements Heap<BEDline> {
       }
     } else {
       // if the heap is full
-      if (this.superiorThan(element, this.elemList.get(0))) {
-        this.replaceTop(element);
+      if (this.inferiorThan(this.elemList.get(0), element)) {
+        this.elemList.set(0, element);
+        this.adjustHeap(0, this.elemList.size());
       } else {
-        // ingnore
+        // ignore the input element
       }
     }
   }
@@ -53,35 +54,48 @@ public class BEDlineInferiorityHeap implements Heap<BEDline> {
   @Override
   public void replaceTop(BEDline element) {
     this.elemList.set(0, element);
-    int i = 1;
-    while ((i << 1) <= this.elemList.size()) {
-      int fatherIndex = i - 1;
-      int lchildIndex = (i << 1) - 1;
-      int rchildIndex = (i << 1);
-      int maxChildIndex = 0;
-      BEDline lchild = this.elemList.get(lchildIndex);
-      BEDline rchild = this.elemList.get(rchildIndex);
-      BEDline maxChild = null;
+    this.adjustHeap(0, this.elemList.size());
+  }
 
-      if (this.inferiorThan(lchild, rchild)) {
-        maxChild = lchild;
-        maxChildIndex = lchildIndex;
-        i = i << 1;
-      } else {
-        maxChild = rchild;
-        maxChildIndex = rchildIndex;
-        i = (i << 1) + 1;
+  /**
+   * Adjust the heap.
+   * 
+   * @param i    0-base index of temporary element
+   * @param size size of the part of heap to be adjusted
+   */
+  private void adjustHeap(int i, int size) {
+    BEDline temp = this.elemList.get(i);
+    for (int k = (i << 1) + 1; k < size; k = (k << 1) + 1) {
+      int lchildIndex = k;
+      int rchildIndex = k + 1;
+      if (rchildIndex < size) {
+        BEDline lchild = this.elemList.get(lchildIndex);
+        BEDline rchild = this.elemList.get(rchildIndex);
+        if (this.inferiorThan(rchild, lchild)) {
+          k = k + 1;
+        }
       }
-      if (this.inferiorThan(maxChild, element)) {
-        this.swap(maxChildIndex, fatherIndex);
+      if (this.inferiorThan(this.elemList.get(k), temp)) {
+        this.elemList.set(i, this.elemList.get(k));
+        i = k;
       } else {
         break;
       }
+    }
+    this.elemList.set(i, temp);
+  }
+
+  @Override
+  public void sort() {
+    for (int i = this.elemList.size() - 1; i > 0; i--) {
+      this.swap(0, i);
+      this.adjustHeap(0, i);
     }
   }
 
   @Override
   public List<BEDline> getElemList() {
+    this.sort();
     for (int i = 0; i < this.elemList.size(); i++) {
       System.out.println("i(" + i + "): " + this.elemList.get(i));
     }
@@ -114,13 +128,11 @@ public class BEDlineInferiorityHeap implements Heap<BEDline> {
         + 1;
     int index = 0;
     for (int i = 0; layer >= 0 && index < this.elemList.size(); layer--, i++) {
-//      for (int j = 0; j < layer - i - 1; j++) {
-//        str = str + "\t";
-//      }
       int lineCount = (int) Math.pow(2, i);
       for (int j = 0; j < lineCount
           && index < this.elemList.size(); index++, j++) {
-        str = str + this.elemList.get(index).getTransRegionBegin() + "\t";
+        str = str + "(" + this.elemList.get(index).getTransRegionBegin() + ","
+            + this.elemList.get(index).getTransRegionEnd() + ")\t";
       }
       str = str + "\n";
     }
@@ -134,19 +146,6 @@ public class BEDlineInferiorityHeap implements Heap<BEDline> {
       return true;
     } else if (transBegin1 == transBegin2) {
       if (line1.getTransRegionEnd() > line2.getTransRegionEnd()) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private boolean superiorThan(BEDline line1, BEDline line2) {
-    long transBegin1 = line1.getTransRegionBegin();
-    long transBegin2 = line2.getTransRegionBegin();
-    if (transBegin1 < transBegin2) {
-      return true;
-    } else if (transBegin1 == transBegin2) {
-      if (line1.getTransRegionEnd() < line2.getTransRegionEnd()) {
         return true;
       }
     }
