@@ -1,8 +1,8 @@
 package bed;
 
 public class BEDline {
-  public static final String STR_UNSET = "";
-  public static final int NUM_UNSET = -1;
+  public static final String STR_UNSET = ""; // a string variable is not set
+  public static final int NUM_UNSET = -1; // a number variable is not set
 
   public static final int PLUS_STRAND = 1;
   public static final int MINUS_STRAND = 0;

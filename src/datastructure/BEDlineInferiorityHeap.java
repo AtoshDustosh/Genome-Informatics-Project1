@@ -96,9 +96,9 @@ public class BEDlineInferiorityHeap implements Heap<BEDline> {
   @Override
   public List<BEDline> getElemList() {
     this.sort();
-    for (int i = 0; i < this.elemList.size(); i++) {
-      System.out.println("i(" + i + "): " + this.elemList.get(i));
-    }
+//    for (int i = 0; i < this.elemList.size(); i++) {
+//      System.out.println("i(" + i + "): " + this.elemList.get(i));
+//    }
     return new ArrayList<>(this.elemList);
   }
 

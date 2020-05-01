@@ -15,9 +15,10 @@ public class CpGIslandSearcher {
   public static final String FASTA_FILEPATH1 = "src/testcase/chr22.hg19.fa";
   public static final String FASTA_FILEPATH2 = "src/testcase/chr22.hg19_test.fa";
 
-  private final int cpgLength = 1000;
+  private final int cpgLength = 5;
 
   private List<Long> promotersPos = new ArrayList<>();
+  private List<Integer> promotersStrand = new ArrayList<>();
   private List<String> CpGIslands = new ArrayList<>();
 
   private long bpStartPos = 0;
@@ -33,8 +34,8 @@ public class CpGIslandSearcher {
     TopKGenomeSearcher searcher = new TopKGenomeSearcher(
         TopKGenomeSearcher.CHROMESOME, TopKGenomeSearcher.K);
     CpGIslandSearcher cpg = new CpGIslandSearcher(
-        searcher.searchFile(TopKGenomeSearcher.TEST_FILEPATH1));
-    List<String> result = cpg.searchFastaFile(FASTA_FILEPATH1);
+        searcher.searchFile(TopKGenomeSearcher.TEST_FILEPATH2));
+    List<String> result = cpg.searchFastaFile(FASTA_FILEPATH2);
     for (int i = 0; i < result.size(); i++) {
       System.out.println("promoter(" + (i + 1) + "): " + result.get(i));
     }
@@ -97,6 +98,7 @@ public class CpGIslandSearcher {
     } catch (IOException e) {
       e.printStackTrace();
     }
+    this.correctCpG_usingStrand();
     return new ArrayList<>(this.CpGIslands);
   }
 
@@ -127,10 +129,70 @@ public class CpGIslandSearcher {
     }
   }
 
+  private void correctCpG_usingStrand() {
+    for (int i = 0; i < this.CpGIslands.size(); i++) {
+      String cpg = this.CpGIslands.get(i);
+      int strand = this.promotersStrand.get(i);
+      if (strand == BEDline.PLUS_STRAND) {
+        continue;
+      } else if (strand == BEDline.MINUS_STRAND) {
+        StringBuilder cpgBuilder = new StringBuilder(cpg).reverse();
+        for (int j = 0; j < cpgBuilder.length(); j++) {
+          char bp = cpgBuilder.charAt(j);
+          switch (bp) {
+            case 'A':
+              bp = 'T';
+              break;
+            case 'C':
+              bp = 'G';
+              break;
+            case 'G':
+              bp = 'C';
+              break;
+            case 'T':
+              bp = 'A';
+              break;
+            case 'a':
+              bp = 't';
+              break;
+            case 'c':
+              bp = 'g';
+              break;
+            case 'g':
+              bp = 'c';
+              break;
+            case 't':
+              bp = 'a';
+              break;
+            default:
+              bp = 'N';
+          }
+          cpgBuilder.setCharAt(j, bp);
+        }
+        this.CpGIslands.set(i, cpgBuilder.toString());
+      } else {
+        System.out
+            .println("... correcting a BED line which has no specific strand");
+      }
+    }
+  }
+
   private void extractPromotersPos(List<BEDline> sortedBEDlines) {
     for (int i = 0; i < sortedBEDlines.size(); i++) {
-      long promoterPos = sortedBEDlines.get(i).getTransRegionBegin();
-      this.promotersPos.add(promoterPos - this.cpgLength);
+      BEDline line = sortedBEDlines.get(i);
+      int strand = line.getStrand();
+      if (strand == BEDline.PLUS_STRAND) {
+        long promoterPos = line.getTransRegionBegin();
+        this.promotersPos.add(promoterPos - this.cpgLength);
+        this.promotersStrand.add(BEDline.PLUS_STRAND);
+      } else if (strand == BEDline.MINUS_STRAND) {
+        long promoterPos = line.getTransRegionEnd(); // scan the sequences and then reverse them
+        this.promotersPos.add(promoterPos);
+        this.promotersStrand.add(BEDline.MINUS_STRAND);
+      } else {
+        System.out.println(
+            "warning: this BED line has no specific strand - use default plus strand. ");
+      }
     }
   }
 

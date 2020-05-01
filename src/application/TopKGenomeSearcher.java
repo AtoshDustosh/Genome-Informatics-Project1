@@ -24,7 +24,7 @@ public class TopKGenomeSearcher {
   public List<BEDline> searchFile(String filePath) {
     BEDreader reader = new BEDreader(filePath);
     Heap<BEDline> heap = new BEDlineInferiorityHeap(this.topK);
-    int count = 0;
+//    int count = 0;
     while (reader.hasNext()) {
       BEDline line = reader.nextLine();
       if (line != null
@@ -40,9 +40,9 @@ public class TopKGenomeSearcher {
   public static void main(String[] args) {
     TopKGenomeSearcher searcher = new TopKGenomeSearcher(
         TopKGenomeSearcher.CHROMESOME, TopKGenomeSearcher.K);
-    List<BEDline> topK = searcher.searchFile(TopKGenomeSearcher.TEST_FILEPATH2);
+    List<BEDline> topK = searcher.searchFile(TopKGenomeSearcher.TEST_FILEPATH1);
     for (int i = 0; i < topK.size(); i++) {
-      System.out.println(topK.get(i));
+      System.out.println("(" + (i + 1) + ")" + topK.get(i));
     }
   }
 
